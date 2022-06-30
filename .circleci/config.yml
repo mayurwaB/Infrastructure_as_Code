@@ -3,18 +3,18 @@
 version: 2.1
 #commit
 jobs:
-  create_infrastructure: 
-      docker:
-        - image: amazon/aws-cli
-      steps:
-        - checkout
-        - run:
-            name: Create Cloudformation Stack
-            command: |
-              aws cloudformation deploy \
-              --template-file ec2_template.yml \
-              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
-              --region us-east-1
+  # create_infrastructure: 
+  #     docker:
+  #       - image: amazon/aws-cli
+  #     steps:
+  #       - checkout
+  #       - run:
+  #           name: Create Cloudformation Stack
+  #           command: |
+  #             aws cloudformation deploy \
+  #             --template-file ec2_template.yml \
+  #             --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
+  #             --region us-east-1
            
         # - run:   
         #     name: Create an inventory file and persist to workspace
@@ -27,27 +27,27 @@ jobs:
         #     paths:
         #       - inventory.txt 
 
-  # configure_infrastructure:
-  #   docker:
-  #       - image: python:3.7-alpine3.11 
-  #   steps:
-  #     - checkout
-  #     - attach_workspace:
-  #         at: .
-  #     - add_ssh_keys:
-  #         fingerprints: ["57:a7:24:50:bb:1c:09:fc:c2:df:32:59:92:65:70:91"] 
-  #     - run:
-  #         name: Install Ansible
-  #         command: apk add --update ansible
-  #     - run:
-  #         name: Run Playbook and Configure server
-  #         command: |
-  #           ansible-playbook main.yml -i inventory.txt
+  configure_infrastructure:
+    docker:
+        - image: python:3.7-alpine3.11 
+    steps:
+      - checkout
+      # - attach_workspace:
+      #     at: .
+      - add_ssh_keys:
+          fingerprints: ["57:a7:24:50:bb:1c:09:fc:c2:df:32:59:92:65:70:91"] 
+      - run:
+          name: Install Ansible
+          command: apk add --update ansible
+      - run:
+          name: Run Playbook and Configure server
+          command: |
+            ansible-playbook main.yml -i inventory
 
 workflows:
   my_workflow:
       jobs:
-        - create_infrastructure
-        # - configure_infrastructure:
+        # - create_infrastructure
+        - configure_infrastructure
         #     requires:
         #       - create_infrastructure
