@@ -2,52 +2,62 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 #commit
+
+commands:
+   destroy_environment:
+     steps:
+       - run:
+           name: Destroy environment
+           when: on_fail
+           command: |
+             aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5}
+
 jobs:
-  # create_infrastructure: 
-  #     docker:
-  #       - image: amazon/aws-cli
-  #     steps:
-  #       - checkout
-  #       - run:
-  #           name: Create Cloudformation Stack
-  #           command: |
-  #             aws cloudformation deploy \
-  #             --template-file ec2_template.yml \
-  #             --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
-  #             --region us-east-1
+  create_infrastructure: 
+      docker:
+        - image: amazon/aws-cli
+      steps:
+        - checkout
+        - run:
+            name: Create Cloudformation Stack
+            command: |
+              aws cloudformation deploy \
+              --template-file ec2_template.yml \
+              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
+              --region us-east-1
 
-  #       - run:
-  #           name: Create tar workspace dependencies
-  #           command: |
-  #             yum install -y tar gzip
+        - run:
+            name: Create tar workspace dependencies
+            command: |
+              yum install -y tar gzip
 
-  #       - run:   
-  #           name: Create an inventory file and persist to workspace
-  #           command: |  
-  #             echo "[all]" >> inventory
-  #             aws ec2 describe-instances --query \
-  #             Reservations[*].Instances[*].PublicIpAddress --output text >> inventory
-  #       - persist_to_workspace:
-  #           root: .
-  #           paths:
-  #             - inventory 
+        - run:   
+            name: Create an inventory file and persist to workspace
+            command: |  
+              echo "[all]" >> inventory
+              aws ec2 describe-instances --query \
+              Reservations[*].Instances[*].PublicIpAddress --output text >> inventory
+        - persist_to_workspace:
+            root: .
+            paths:
+              - inventory 
 
-  # configure_infrastructure:
-  #   docker:
-  #       - image: python:3.7-alpine3.11 
-  #   steps:
-  #     - checkout
-  #     - attach_workspace:
-  #         at: .
-  #     - add_ssh_keys:
-  #         fingerprints: ["57:a7:24:50:bb:1c:09:fc:c2:df:32:59:92:65:70:91"] 
-  #     - run:
-  #         name: Install Ansible
-  #         command: apk add --update ansible
-  #     - run:
-  #         name: Run Playbook and Configure server
-  #         command: |
-  #           ansible-playbook main.yml -i inventory
+  configure_infrastructure:
+    docker:
+        - image: python:3.7-alpine3.11 
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - add_ssh_keys:
+          fingerprints: ["57:a7:24:50:bb:1c:09:fc:c2:df:32:59:92:65:70:91"] 
+      - run:
+          name: Install Ansible
+          command: apk add --update ansible
+      - run:
+          name: Run Playbook and Configure server
+          command: |
+            ansible-playbook main.yml -i inventory
 
   smoke_test:
     docker:
@@ -64,13 +74,16 @@ jobs:
               return 0
             else
               return 1
-            fi          
+            fi  
+      - destroy_environment              
 
 workflows:
   my_workflow:
       jobs:
-        # - create_infrastructure
-        # - configure_infrastructure:
-        #     requires:
-        #       - create_infrastructure
-        - smoke_test
+        - create_infrastructure
+        - configure_infrastructure:
+            requires:
+              - create_infrastructure
+        - smoke_test:
+            requires:
+              - configure_infrastructure
