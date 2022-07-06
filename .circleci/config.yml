@@ -66,6 +66,7 @@ jobs:
       - run:
           name: smoke test
           command: |
+<<<<<<< HEAD
             URL="http://localhost:9090/"
             # Test if website exists
             if curl -s --head ${URL} 
@@ -73,6 +74,15 @@ jobs:
               exit 0
             else
               exit 1
+=======
+            URL="http://localhost:3000/"
+            # Test if website exists
+            if curl -s --head ${URL} 
+            then
+              return 0
+            else
+              return 1
+>>>>>>> 48894d93ff9e8ba97edf276afbc9fcbc3c503517
             fi  
       - destroy_environment              
 
