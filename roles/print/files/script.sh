@@ -1,8 +1,4 @@
 #!/bin/bash
-# Using Ubuntu
-#!/bin/bash
-
-
 
 sudo useradd --no-create-home prometheus
 sudo mkdir /etc/prometheus

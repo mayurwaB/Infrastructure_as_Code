@@ -3,20 +3,10 @@
   apt:
     update_cache: yes
 
-- name: "upgrade packages"
-  become: yes
-  apt:
-    upgrade: yes
+# - name: "upgrade packages"
+#   become: yes
+#   apt:
+#     upgrade: yes
 
 - name: "installs all node packages"
   script: script.sh
-
-- name: "installs the pm2 package"
-  shell: npm install pm2 -g
-
-- copy:
-    src: index.js
-    dest: ~/index.js
-
-- name: "start the pm 2 service"
-  shell: pm2 start -f ~/index.js    
