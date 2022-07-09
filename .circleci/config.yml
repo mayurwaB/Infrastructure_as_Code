@@ -50,7 +50,7 @@ jobs:
       - attach_workspace:
           at: .
       - add_ssh_keys:
-          fingerprints: ["57:a7:24:50:bb:1c:09:fc:c2:df:32:59:92:65:70:91"] 
+          fingerprints: ["1f:e5:f1:3d:d6:24:bc:b9:fb:94:47:9f:4e:21:3a:3b"] 
       - run:
           name: Install Ansible
           command: apk add --update ansible
